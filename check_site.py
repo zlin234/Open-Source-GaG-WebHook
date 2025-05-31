@@ -11,6 +11,7 @@ KEYWORD_ROLE_MAP = {
     "Grape": "1377186235335835718",
     "Cacao": "1377186318999752744",
     "Bamboo": "1378271980255449149",
+    "Apple": "1378271980255449149",
     # add more keywords and role IDs as needed
 }
 
