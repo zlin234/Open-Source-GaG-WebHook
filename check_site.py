@@ -1,6 +1,7 @@
 import os
 import requests
 from playwright.sync_api import sync_playwright, TimeoutError
+from datetime import datetime
 
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 
@@ -33,18 +34,39 @@ def send_discord_ping(message: str, role_id: str):
 def fetch_html_and_check_words(url: str, keyword_role_map: dict):
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
-        page.goto(url)
+        context = browser.new_context()
+
+        # Set a realistic User-Agent header
+        context.set_extra_http_headers({
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/114.0.0.0 Safari/537.36"
+            )
+        })
+
+        page = context.new_page()
+
+        # Clear cookies and localStorage before navigation
+        context.clear_cookies()
+        page.evaluate("() => { window.localStorage.clear(); }")
 
         try:
-            page.wait_for_load_state('networkidle', timeout=30000)
+            page.goto(url, wait_until="networkidle", timeout=60000)
+            page.reload(wait_until="networkidle")
+            # Wait extra for dynamic content to load
+            page.wait_for_timeout(5000)
         except TimeoutError:
             print("Timeout waiting for networkidle, proceeding anyway...")
 
         html = page.content()
         browser.close()
 
+        now = datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S UTC")
+        print(f"[{now}] Fetched HTML snippet:\n{html[:500]}...\n")
+
         with open("output.html", "w", encoding="utf-8") as f:
+            f.write(f"<!-- Fetched at {now} -->\n")
             f.write(html)
 
         found_any = False
