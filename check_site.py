@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import os
 
 # Configuration
-url = "https://example.com"  # Your target site
+url = "https://growagardenstock.com"  # Your target site
 output_file = "downloaded_page.html"
 keywords = ["example", "domain", "test"]
 webhook_url = os.getenv("DISCORD_WEBHOOK")  # Discord webhook from secret
