@@ -10,6 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Upload HTML artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: downloaded-html
+          path: downloaded_page.html
+
       - name: Checkout repo
         uses: actions/checkout@v3
 
