@@ -34,28 +34,22 @@ def send_discord_ping(message: str, role_id: str):
 def fetch_html_and_check_words(url: str, keyword_role_map: dict):
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
-        context = browser.new_context()
 
-        # Set a realistic User-Agent header
-        context.set_extra_http_headers({
-            "User-Agent": (
+        # Create fresh context with a realistic user agent
+        context = browser.new_context(
+            user_agent=(
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                 "AppleWebKit/537.36 (KHTML, like Gecko) "
                 "Chrome/114.0.0.0 Safari/537.36"
             )
-        })
+        )
 
         page = context.new_page()
-
-        # Clear cookies and localStorage before navigation
-        context.clear_cookies()
-        page.evaluate("() => { window.localStorage.clear(); }")
 
         try:
             page.goto(url, wait_until="networkidle", timeout=60000)
             page.reload(wait_until="networkidle")
-            # Wait extra for dynamic content to load
-            page.wait_for_timeout(5000)
+            page.wait_for_timeout(5000)  # wait extra for dynamic content
         except TimeoutError:
             print("Timeout waiting for networkidle, proceeding anyway...")
 
@@ -78,7 +72,3 @@ def fetch_html_and_check_words(url: str, keyword_role_map: dict):
 
         if not found_any:
             print("No keywords found.")
-
-if __name__ == "__main__":
-    target_url = "https://growagardenstock.com"  # Change to the URL you want to monitor
-    fetch_html_and_check_words(target_url, KEYWORD_ROLE_MAP)
