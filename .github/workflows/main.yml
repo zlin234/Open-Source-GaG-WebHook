@@ -32,7 +32,7 @@ jobs:
       - name: Run scraper
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        run: python your_script.py
+        run: python check_site.py
 
       - name: Commit and push output.html
         run: |
