@@ -1,6 +1,6 @@
 import os
 import requests
-from playwright.sync_api import sync_playwright, TimeoutError
+from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 
@@ -35,13 +35,18 @@ def fetch_html_and_check_words(url: str, keyword_role_map: dict):
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
-        page.goto(url)
-
+        
         try:
-            page.wait_for_load_state('networkidle', timeout=30000)
-        except TimeoutError:
-            print("Timeout waiting for networkidle, proceeding anyway...")
-
+            page.goto(url, timeout=60000)  # Increased timeout to 60 seconds
+            try:
+                page.wait_for_load_state('networkidle', timeout=30000)
+            except PlaywrightTimeoutError:
+                print("Timeout waiting for networkidle, proceeding anyway...")
+        except Exception as e:
+            print(f"Error loading page: {e}")
+            browser.close()
+            return
+            
         html = page.content()
         browser.close()
 
