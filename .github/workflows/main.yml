@@ -1,4 +1,4 @@
-name: Selenium Web Scraper
+name: Selenium Web Scraper and Commit
 
 on:
   push:
@@ -6,27 +6,30 @@ on:
       - main
 
 jobs:
-  scrape:
+  scrape_and_commit:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          persist-credentials: true  # Keep the token for pushing
+          fetch-depth: 0            # Needed for pushing changes
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      - name: Install dependencies
+      - name: Install dependencies and Chrome
         run: |
           sudo apt-get update
-          sudo apt-get install -y wget unzip xvfb
+          sudo apt-get install -y wget unzip
           wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
           sudo apt install -y ./google-chrome-stable_current_amd64.deb
           pip install selenium
 
-          # Download ChromeDriver version matching the installed Chrome
+          # Download ChromeDriver matching Chrome version
           CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+')
           CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
           wget https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip
@@ -34,6 +37,14 @@ jobs:
           sudo mv chromedriver /usr/local/bin/
           chmod +x /usr/local/bin/chromedriver
 
-      - name: Run Selenium script
+      - name: Run Selenium scraper
         run: |
-          python check_site.py
+          python your_script.py
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add rendered_output.html
+          git commit -m "Update rendered HTML from GitHub Actions [skip ci]" || echo "No changes to commit"
+          git push
