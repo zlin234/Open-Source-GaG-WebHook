@@ -2,8 +2,8 @@ name: Check Website Keywords
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Runs every hour
-  workflow_dispatch:     # Manual trigger
+    - cron: '*/5 * * * *'  # Every 5 minutes
+  workflow_dispatch:        # Optional: allow manual runs
 
 jobs:
   check:
