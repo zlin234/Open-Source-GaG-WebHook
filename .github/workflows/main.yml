@@ -29,13 +29,14 @@ jobs:
           playwright install
 
       - name: Run scraper
-        run: python check_site.py
+        run: timeout 60s python check_site.py
 
       - name: Commit and push if changed
         run: |
+          set -x
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull --rebase origin main
+          git pull --rebase --autostash --quiet origin main
           git add output.html
           git commit -m "Update output.html [skip ci]" || echo "No changes to commit"
-          git push origin main
+          git push origin main || echo "Push failed, likely no permission"
