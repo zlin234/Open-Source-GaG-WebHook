@@ -6,12 +6,14 @@ DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 
 # Map each keyword to the Discord role ID to ping
 KEYWORD_ROLE_MAP = {
-    "Carrot": "1377597478383255576",
     "Mushroom": "1377186156982046791",
     "Grape": "1377186235335835718",
     "Cacao": "1377186318999752744",
     "Bamboo": "1378271980255449149",
-    "Apple": "1378271980255449149",
+    "Apple": "1378273610103521351",
+    "Beanstalk": "1377186479389933568",
+    "Mango": "1377213063752581151"
+    "Dragon": "1377213106345873428"
     # add more keywords and role IDs as needed
 }
 
