@@ -1,17 +1,19 @@
-name: Selenium Web Scraper and Commit
+name: Playwright Scraper with Discord Notification
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
-  workflow_dispatch:   # <-- enables manual trigger
+  schedule:
+    - cron: '*/5 * * * *'  # Runs every 5 minutes
 
 jobs:
   scrape_and_commit:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v3
         with:
           persist-credentials: true
@@ -22,30 +24,20 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install dependencies and Chrome
+      - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y wget unzip
-          wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          sudo apt install -y ./google-chrome-stable_current_amd64.deb
-          pip install selenium
+          pip install playwright requests
+          playwright install
 
-          CHROME_VERSION=$(google-chrome --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
-          CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
-          wget https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip
-          unzip chromedriver_linux64.zip
-          sudo mv chromedriver /usr/local/bin/
-          chmod +x /usr/local/bin/chromedriver
+      - name: Run scraper
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python your_script.py
 
-
-      - name: Run Selenium scraper
-        run: |
-          python your_script.py
-
-      - name: Commit and push changes
+      - name: Commit and push output.html
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add rendered_output.html
-          git commit -m "Update rendered HTML from GitHub Actions [skip ci]" || echo "No changes to commit"
+          git add output.html
+          git commit -m "Update output.html [skip ci]" || echo "No changes to commit"
           git push
