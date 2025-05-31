@@ -12,8 +12,8 @@ KEYWORD_ROLE_MAP = {
     "Bamboo": "1378271980255449149",
     "Apple": "1378273610103521351",
     "Beanstalk": "1377186479389933568",
-    "Mango": "1377213063752581151"
-    "Dragon": "1377213106345873428"
+    "Mango": "1377213063752581151",
+    "Dragon": "1377213106345873428",
     # add more keywords and role IDs as needed
 }
 
