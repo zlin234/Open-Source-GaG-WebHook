@@ -1,9 +1,13 @@
+import os
 import requests
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, TimeoutError
 
-DISCORD_WEBHOOK_URL = "https://discord.com/api/webhooks/1377588810522562560/SFFtoKG5kfKrV1rOuRI9NK_CKV8-UQ5QA7TJ9k9oUKmKIj95gsTot6X-8aID2KNosKog"
+DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 
 def send_discord_ping(message: str):
+    if not DISCORD_WEBHOOK_URL:
+        print("Discord webhook URL not set in environment variable.")
+        return
     data = {"content": message}
     response = requests.post(DISCORD_WEBHOOK_URL, json=data)
     if response.status_code == 204:
@@ -16,7 +20,12 @@ def fetch_html_and_check_word(url: str, keyword: str = "carrot"):
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
         page.goto(url)
-        page.wait_for_load_state('networkidle')
+
+        try:
+            page.wait_for_load_state('networkidle', timeout=30000)  # 30 seconds timeout
+        except TimeoutError:
+            print("Timeout waiting for networkidle, proceeding anyway...")
+
         html = page.content()
         browser.close()
 
@@ -30,5 +39,5 @@ def fetch_html_and_check_word(url: str, keyword: str = "carrot"):
             print(f"Keyword '{keyword}' not found.")
 
 if __name__ == "__main__":
-    target_url = "https://growagardenstock.com"  # Change this URL
+    target_url = "https://growagardenstock.com"  # Change to your URL
     fetch_html_and_check_word(target_url)
