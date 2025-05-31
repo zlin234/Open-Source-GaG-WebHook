@@ -1,43 +1,18 @@
-import requests
-from bs4 import BeautifulSoup
-import os
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
-# Configuration
-url = "https://growagardenstock.com"  # Your target site
-output_file = "downloaded_page.html"
-keywords = ["example", "domain", "test"]
-webhook_url = os.getenv("DISCORD_WEBHOOK")  # Discord webhook from secret
+options = Options()
+options.add_argument('--headless')
+options.add_argument('--disable-gpu')
+options.add_argument('--no-sandbox')  # Required in GitHub Actions
+options.add_argument('--disable-dev-shm-usage')  # Prevent crashes in CI
 
-# Fetch HTML
-try:
-    response = requests.get(url)
-    response.raise_for_status()
-    html_content = response.text
-except requests.RequestException as e:
-    print(f"Failed to fetch HTML: {e}")
-    exit(1)
+driver = webdriver.Chrome(options=options)
 
-# Overwrite HTML file
-with open(output_file, "w", encoding="utf-8") as f:
-    f.write(html_content)
+driver.get('https://example.com')
+html = driver.page_source
 
-# Search for keywords
-soup = BeautifulSoup(html_content, "html.parser")
-text = soup.get_text().lower()
+with open('rendered_output.html', 'w', encoding='utf-8') as f:
+    f.write(html)
 
-found_keywords = [kw for kw in keywords if kw.lower() in text]
-
-# Send webhook if any keywords are found
-if found_keywords and webhook_url:
-    mentions = "<@&ROLE_ID_1> <@&ROLE_ID_2>"  # Replace with actual Discord role IDs
-    message = {
-        "content": f"{mentions}\nKeyword(s) found on {url}: {', '.join(found_keywords)}"
-    }
-    try:
-        r = requests.post(webhook_url, json=message)
-        r.raise_for_status()
-        print("Webhook sent successfully.")
-    except requests.RequestException as e:
-        print(f"Failed to send webhook: {e}")
-else:
-    print("No keywords found or webhook URL missing.")
+driver.quit()
