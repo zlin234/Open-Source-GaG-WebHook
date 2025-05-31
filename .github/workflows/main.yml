@@ -2,21 +2,15 @@ name: Check Website Keywords
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # Every 5 minutes
-  workflow_dispatch:        # Optional: allow manual runs
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
 
 jobs:
   check:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Upload HTML artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: downloaded-html
-          path: downloaded_page.html
-
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Set up Python
@@ -31,3 +25,9 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         run: python check_site.py
+
+      - name: Upload HTML artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: downloaded-html
+          path: downloaded_page.html
