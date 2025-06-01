@@ -1,42 +1,40 @@
-name: Scrape and Notify
+name: Website Monitor
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
-  workflow_dispatch:
+    - cron: '*/15 * * * *'  # Runs every 15 minutes
+  workflow_dispatch:        # Allow manual runs
 
 jobs:
-  scrape:
+  monitor:
     runs-on: ubuntu-latest
-
-    env:
-      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+    timeout-minutes: 10     # Prevent hanging jobs
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: true  # required for push
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
 
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          playwright install
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests playwright
+        playwright install chromium
 
-      - name: Run scraper
-        run: timeout 60s python check_site.py
+    - name: Run monitor script
+      env:
+        DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      run: python check_site.py  # Replace with your actual script name
 
-      - name: Commit and push if changed
-        run: |
-          set -x
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull --rebase --autostash --quiet origin main
-          git add output.html
-          git commit -m "Update output.html [skip ci]" || echo "No changes to commit"
-          git push origin main || echo "Push failed, likely no permission"
+    - name: Upload debug artifacts
+      if: ${{ always() }}  # Run even if previous steps fail
+      uses: actions/upload-artifact@v3
+      with:
+        name: debug-files
+        path: |
+          screenshot.png
+          output.html
